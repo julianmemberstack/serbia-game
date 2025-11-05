@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { RigidBody, RapierRigidBody } from '@react-three/rapier';
 import { Billboard, Plane, useTexture } from '@react-three/drei';
@@ -20,6 +20,17 @@ export function Nextbot({ position, onKill, type }: NextbotProps) {
   const gameState = useGameStore((state) => state.gameState);
   const playerPosition = useGameStore((state) => state.playerPosition);
   const startTime = useRef(Date.now());
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Detect mobile device
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Load the texture based on nextbot type
   const texture = useTexture(NEXTBOT_TEXTURES[type]);
@@ -28,8 +39,14 @@ export function Nextbot({ position, onKill, type }: NextbotProps) {
   const aspectRatio = (texture.image as any)?.width && (texture.image as any)?.height
     ? (texture.image as any).width / (texture.image as any).height
     : 1;
-  const billboardWidth = NEXTBOT_CONFIG.SIZE * aspectRatio;
-  const billboardHeight = NEXTBOT_CONFIG.SIZE;
+
+  // Adjust size, height, and speed for mobile
+  const sizeMultiplier = isMobile ? 0.6 : 1; // 60% size on mobile
+  const heightOffset = isMobile ? 0.3 : NEXTBOT_CONFIG.HEIGHT_OFFSET; // Lower on mobile
+  const speedMultiplier = isMobile ? 0.65 : 1; // 65% speed on mobile
+
+  const billboardWidth = NEXTBOT_CONFIG.SIZE * aspectRatio * sizeMultiplier;
+  const billboardHeight = NEXTBOT_CONFIG.SIZE * sizeMultiplier;
 
   const targetPosition = useRef(new Vector3());
   const currentPosition = useRef(new Vector3());
@@ -53,7 +70,7 @@ export function Nextbot({ position, onKill, type }: NextbotProps) {
     direction.current
       .subVectors(targetPosition.current, currentPosition.current)
       .normalize()
-      .multiplyScalar(NEXTBOT_CONFIG.SPEED);
+      .multiplyScalar(NEXTBOT_CONFIG.SPEED * speedMultiplier);
 
     // Move towards player
     botRef.current.setLinvel(
@@ -88,7 +105,7 @@ export function Nextbot({ position, onKill, type }: NextbotProps) {
       solverGroups={0x00020001}
       gravityScale={0}
     >
-      <Billboard position={[0, NEXTBOT_CONFIG.HEIGHT_OFFSET, 0]}>
+      <Billboard position={[0, heightOffset, 0]}>
         <Plane args={[billboardWidth, billboardHeight]}>
           <meshBasicMaterial map={texture} transparent />
         </Plane>

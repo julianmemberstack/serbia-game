@@ -28,7 +28,14 @@ export function Game() {
       <Canvas
         shadows
         camera={{ position: [0, 2, 5], fov: 75 }}
-        style={{ width: '100vw', height: '100vh' }}
+        style={{
+          width: '100vw',
+          height: '100vh',
+          height: '100dvh', // Dynamic viewport height for mobile Safari
+          position: 'fixed',
+          top: 0,
+          left: 0
+        }}
       >
         {/* Blue sky background */}
         <color attach="background" args={['#5B9BD5']} />
