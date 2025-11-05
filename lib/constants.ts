@@ -53,6 +53,13 @@ export const NEXTBOT_TEXTURES: Record<NextbotType, string> = {
   'speed-camera': '/speed-camera.png',
 } as const;
 
+// Death Titles by Nextbot Type
+export const DEATH_TITLES: Record<NextbotType, string> = {
+  police: 'POLICE ENCOUNTER!',
+  optuznica: 'LEGAL TROUBLES!',
+  'speed-camera': 'CAUGHT BY A SPEED CAMERA!',
+} as const;
+
 // Death Messages by Nextbot Type
 export const DEATH_MESSAGES: Record<NextbotType, string[]> = {
   optuznica: [

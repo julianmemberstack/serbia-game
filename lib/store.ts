@@ -20,6 +20,8 @@ interface GameStore {
   // Death message
   deathMessage: string;
   setDeathMessage: (message: string) => void;
+  killerType: NextbotType | null;
+  setKillerType: (type: NextbotType | null) => void;
 
   // Touch controls
   touchMovement: { x: number; y: number };
@@ -42,6 +44,7 @@ export const useGameStore = create<GameStore>((set) => ({
   playerPosition: new Vector3(0, 0, 0),
   timeRemaining: GAME_CONFIG.ROUND_DURATION,
   deathMessage: '',
+  killerType: null,
   touchMovement: { x: 0, y: 0 },
   touchSprint: false,
   touchCamera: { x: 0, y: 0 },
@@ -52,6 +55,7 @@ export const useGameStore = create<GameStore>((set) => ({
   setPlayerPosition: (playerPosition) => set({ playerPosition }),
   setTimeRemaining: (timeRemaining) => set({ timeRemaining }),
   setDeathMessage: (deathMessage) => set({ deathMessage }),
+  setKillerType: (killerType) => set({ killerType }),
   setTouchMovement: (touchMovement) => set({ touchMovement }),
   setTouchSprint: (touchSprint) => set({ touchSprint }),
   setTouchCamera: (touchCamera) => set({ touchCamera }),
@@ -74,6 +78,7 @@ export const useGameStore = create<GameStore>((set) => ({
     set({
       gameState: won ? 'won' : 'dead',
       deathMessage: randomMessage,
+      killerType: won ? null : killerType || null,
     });
   },
 
@@ -82,5 +87,6 @@ export const useGameStore = create<GameStore>((set) => ({
     stamina: PLAYER_CONFIG.STAMINA_MAX,
     timeRemaining: GAME_CONFIG.ROUND_DURATION,
     deathMessage: '',
+    killerType: null,
   }),
 }));

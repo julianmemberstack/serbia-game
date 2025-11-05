@@ -2,13 +2,14 @@
 
 import { useEffect } from 'react';
 import { useGameStore } from '@/lib/store';
-import { SERBIAN_COLORS, PLAYER_CONFIG, GAME_CONFIG } from '@/lib/constants';
+import { SERBIAN_COLORS, PLAYER_CONFIG, GAME_CONFIG, DEATH_TITLES } from '@/lib/constants';
 
 export function GameHUD() {
   const gameState = useGameStore((state) => state.gameState);
   const stamina = useGameStore((state) => state.stamina);
   const timeRemaining = useGameStore((state) => state.timeRemaining);
   const deathMessage = useGameStore((state) => state.deathMessage);
+  const killerType = useGameStore((state) => state.killerType);
   const startGame = useGameStore((state) => state.startGame);
   const resetGame = useGameStore((state) => state.resetGame);
 
@@ -129,7 +130,7 @@ export function GameHUD() {
           style={{ backgroundColor: 'rgba(198, 54, 60, 0.95)' }}>
           <div className="text-center space-y-8 px-8">
             <h1 className="text-8xl font-bold text-white mb-4">
-              YOU DIED
+              {killerType ? DEATH_TITLES[killerType] : 'YOU DIED'}
             </h1>
             <p className="text-4xl text-white/90 font-bold max-w-4xl mx-auto">
               {deathMessage}
