@@ -30,7 +30,6 @@ export function Game() {
         camera={{ position: [0, 2, 5], fov: 75 }}
         style={{
           width: '100vw',
-          height: '100vh',
           height: '100dvh', // Dynamic viewport height for mobile Safari
           position: 'fixed',
           top: 0,

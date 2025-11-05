@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -15,6 +15,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Law Abiding Serbian Citizen Simulator",
   description: "Experience the daily life of a law-abiding Serbian citizen!",
+};
+
+export const viewport: Viewport = {
   themeColor: "#5B9BD5",
 };
 
