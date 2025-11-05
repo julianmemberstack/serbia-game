@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Nextbot } from './Nextbot';
 import { useGameStore } from '@/lib/store';
@@ -11,18 +12,47 @@ export function NextbotManager() {
   const setTimeRemaining = useGameStore((state) => state.setTimeRemaining);
   const gameState = useGameStore((state) => state.gameState);
 
-  // Define the nextbot types to spawn (mix of all three)
-  const nextbotTypes: NextbotType[] = ['police', 'optuznica', 'speed-camera', 'police', 'speed-camera'];
+  // Preset spawn locations around the map
+  const allSpawnLocations: [number, number, number][] = [
+    // Corners
+    [25, 2, 25],
+    [25, 2, -25],
+    [-25, 2, 25],
+    [-25, 2, -25],
+    // Mid edges
+    [25, 2, 0],
+    [-25, 2, 0],
+    [0, 2, 25],
+    [0, 2, -25],
+    // Quarter points
+    [25, 2, 12],
+    [25, 2, -12],
+    [-25, 2, 12],
+    [-25, 2, -12],
+    [12, 2, 25],
+    [-12, 2, 25],
+    [12, 2, -25],
+    [-12, 2, -25],
+  ];
 
-  // Generate spawn positions for nextbots (around the perimeter)
-  const spawnPositions: [number, number, number][] = [];
-  for (let i = 0; i < NEXTBOT_CONFIG.SPAWN_COUNT; i++) {
-    const angle = (i / NEXTBOT_CONFIG.SPAWN_COUNT) * Math.PI * 2;
-    const radius = 25; // Increased from 20 to match larger map
-    const x = Math.cos(angle) * radius;
-    const z = Math.sin(angle) * radius;
-    spawnPositions.push([x, 2, z]);
-  }
+  // Randomly select spawn positions and types each time component mounts
+  const { spawnPositions, nextbotTypes } = useMemo(() => {
+    // Shuffle the spawn locations
+    const shuffledLocations = [...allSpawnLocations].sort(() => Math.random() - 0.5);
+    const selectedPositions = shuffledLocations.slice(0, NEXTBOT_CONFIG.SPAWN_COUNT);
+
+    // Randomly assign types
+    const typeOptions: NextbotType[] = ['police', 'optuznica', 'speed-camera'];
+    const selectedTypes: NextbotType[] = [];
+    for (let i = 0; i < NEXTBOT_CONFIG.SPAWN_COUNT; i++) {
+      selectedTypes.push(typeOptions[Math.floor(Math.random() * typeOptions.length)]);
+    }
+
+    return {
+      spawnPositions: selectedPositions,
+      nextbotTypes: selectedTypes,
+    };
+  }, []); // Only run once when component mounts
 
   // Timer countdown
   useFrame((state, delta) => {

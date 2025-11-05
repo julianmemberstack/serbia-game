@@ -39,13 +39,13 @@ export function GameHUD() {
   }, [gameState, startGame, resetGame]);
 
   return (
-    <div className="fixed inset-0 pointer-events-none">
+    <div className="fixed inset-0 pointer-events-none" style={{ userSelect: 'none' }}>
       {/* Menu Screen */}
       {gameState === 'menu' && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-auto px-4"
-          style={{ backgroundColor: 'rgba(12, 64, 118, 0.95)' }}>
+          style={{ backgroundColor: 'rgba(12, 64, 118, 0.95)', userSelect: 'none' }}>
           <div className="text-center space-y-4 md:space-y-8 max-w-4xl">
-            <h1 className="text-3xl md:text-6xl font-bold text-white mb-2 md:mb-4">
+            <h1 className="text-2xl md:text-4xl font-bold text-white mb-2 md:mb-4">
               LAW ABIDING SERBIAN CITIZEN SIMULATOR
             </h1>
             <div className="text-sm md:text-xl text-white space-y-1 md:space-y-2 mb-4 md:mb-8">
