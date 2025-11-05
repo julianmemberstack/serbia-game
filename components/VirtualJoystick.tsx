@@ -14,23 +14,22 @@ interface VirtualJoystickProps {
 }
 
 export function VirtualJoystick({ onMove }: VirtualJoystickProps) {
-  const [joystickState, setJoystickState] = useState<JoystickState>({
-    x: 0,
-    y: 0,
-    active: false,
-  });
   const baseRef = useRef<HTMLDivElement>(null);
   const stickRef = useRef<HTMLDivElement>(null);
   const touchIdRef = useRef<number | null>(null);
   const baseCenterRef = useRef({ x: 0, y: 0 });
+  const onMoveRef = useRef(onMove);
 
   const maxDistance = 50; // Maximum distance the stick can move from center
 
   useEffect(() => {
-    onMove(joystickState);
-  }, [joystickState, onMove]);
+    onMoveRef.current = onMove;
+  }, [onMove]);
 
   const handleTouchStart = (e: React.TouchEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
     if (touchIdRef.current !== null) return; // Already tracking a touch
 
     const touch = e.touches[0];
@@ -44,10 +43,17 @@ export function VirtualJoystick({ onMove }: VirtualJoystickProps) {
       };
     }
 
-    setJoystickState({ x: 0, y: 0, active: true });
+    if (stickRef.current) {
+      stickRef.current.style.backgroundColor = SERBIAN_COLORS.RED;
+    }
+
+    onMoveRef.current({ x: 0, y: 0, active: true });
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
     if (touchIdRef.current === null) return;
 
     const touch = Array.from(e.touches).find(t => t.identifier === touchIdRef.current);
@@ -68,8 +74,8 @@ export function VirtualJoystick({ onMove }: VirtualJoystickProps) {
       stickRef.current.style.transform = `translate(${stickX}px, ${stickY}px)`;
     }
 
-    // Normalize to -1 to 1 range
-    setJoystickState({
+    // Normalize to -1 to 1 range and call onMove directly
+    onMoveRef.current({
       x: stickX / maxDistance,
       y: stickY / maxDistance,
       active: true,
@@ -77,6 +83,9 @@ export function VirtualJoystick({ onMove }: VirtualJoystickProps) {
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
     const touches = Array.from(e.changedTouches);
     if (!touches.some(t => t.identifier === touchIdRef.current)) return;
 
@@ -85,9 +94,10 @@ export function VirtualJoystick({ onMove }: VirtualJoystickProps) {
     // Reset stick position
     if (stickRef.current) {
       stickRef.current.style.transform = 'translate(0px, 0px)';
+      stickRef.current.style.backgroundColor = SERBIAN_COLORS.BLUE;
     }
 
-    setJoystickState({ x: 0, y: 0, active: false });
+    onMoveRef.current({ x: 0, y: 0, active: false });
   };
 
   return (
@@ -114,10 +124,9 @@ export function VirtualJoystick({ onMove }: VirtualJoystickProps) {
           width: '50px',
           height: '50px',
           borderRadius: '50%',
-          backgroundColor: joystickState.active ? SERBIAN_COLORS.RED : SERBIAN_COLORS.BLUE,
+          backgroundColor: SERBIAN_COLORS.BLUE,
           top: 'calc(50% - 25px)',
           left: 'calc(50% - 25px)',
-          transition: joystickState.active ? 'none' : 'all 0.2s',
           pointerEvents: 'none',
         }}
       />

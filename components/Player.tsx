@@ -60,10 +60,11 @@ export function Player() {
       position.z
     );
 
-    // Handle touch camera movement
+    // Handle touch camera movement with higher sensitivity
     if (touchCamera.x !== 0 || touchCamera.y !== 0) {
-      rotation.current.y -= touchCamera.x * PLAYER_CONFIG.MOUSE_SENSITIVITY;
-      rotation.current.x -= touchCamera.y * PLAYER_CONFIG.MOUSE_SENSITIVITY;
+      const touchSensitivity = PLAYER_CONFIG.MOUSE_SENSITIVITY * 2.5; // 2.5x more sensitive for touch
+      rotation.current.y -= touchCamera.x * touchSensitivity;
+      rotation.current.x -= touchCamera.y * touchSensitivity;
 
       // Clamp vertical rotation
       rotation.current.x = Math.max(

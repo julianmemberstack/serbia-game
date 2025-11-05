@@ -25,47 +25,12 @@ export function TouchControls() {
 
   return (
     <div className="fixed inset-0 pointer-events-none z-10">
-      {/* Left side - Virtual Joystick */}
-      <div className="absolute bottom-8 left-8 pointer-events-auto">
-        <VirtualJoystick
-          onMove={(state) => {
-            setTouchMovement({ x: state.x, y: state.y });
-          }}
-        />
-      </div>
-
-      {/* Right side - Sprint Button */}
-      <div className="absolute bottom-8 right-8 pointer-events-auto">
-        <button
-          className="w-24 h-24 rounded-full font-bold text-white text-lg shadow-lg active:scale-95 transition-transform"
-          style={{
-            backgroundColor: SERBIAN_COLORS.RED,
-            border: `3px solid ${SERBIAN_COLORS.WHITE}`,
-            touchAction: 'none',
-          }}
-          onTouchStart={(e) => {
-            e.preventDefault();
-            setTouchSprint(true);
-          }}
-          onTouchEnd={(e) => {
-            e.preventDefault();
-            setTouchSprint(false);
-          }}
-          onTouchCancel={(e) => {
-            e.preventDefault();
-            setTouchSprint(false);
-          }}
-        >
-          SPRINT
-        </button>
-      </div>
-
       {/* Camera control overlay - covers most of screen except controls */}
       <div
         className="absolute inset-0 pointer-events-auto"
         style={{
-          clipPath: 'polygon(0 0, 100% 0, 100% 100%, 0 100%, 0 0, 200px 100%, calc(100% - 200px) 100%, calc(100% - 200px) calc(100% - 200px), 200px calc(100% - 200px), 200px 100%)',
           touchAction: 'none',
+          zIndex: 1,
         }}
         onTouchMove={(e) => {
           if (e.touches.length === 1) {
@@ -90,6 +55,41 @@ export function TouchControls() {
           delete (e.target as any).lastY;
         }}
       />
+
+      {/* Left side - Virtual Joystick */}
+      <div className="absolute bottom-8 left-8 pointer-events-auto" style={{ zIndex: 10 }}>
+        <VirtualJoystick
+          onMove={(state) => {
+            setTouchMovement({ x: state.x, y: state.y });
+          }}
+        />
+      </div>
+
+      {/* Right side - Sprint Button */}
+      <div className="absolute bottom-8 right-8 pointer-events-auto" style={{ zIndex: 10 }}>
+        <button
+          className="w-24 h-24 rounded-full font-bold text-white text-lg shadow-lg active:scale-95 transition-transform"
+          style={{
+            backgroundColor: SERBIAN_COLORS.RED,
+            border: `3px solid ${SERBIAN_COLORS.WHITE}`,
+            touchAction: 'none',
+          }}
+          onTouchStart={(e) => {
+            e.preventDefault();
+            setTouchSprint(true);
+          }}
+          onTouchEnd={(e) => {
+            e.preventDefault();
+            setTouchSprint(false);
+          }}
+          onTouchCancel={(e) => {
+            e.preventDefault();
+            setTouchSprint(false);
+          }}
+        >
+          SPRINT
+        </button>
+      </div>
     </div>
   );
 }
