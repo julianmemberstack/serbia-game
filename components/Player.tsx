@@ -27,6 +27,7 @@ export function Player() {
   const frontVector = useRef(new Vector3());
   const sideVector = useRef(new Vector3());
   const rotation = useRef({ x: 0, y: 0 });
+  const targetRotation = useRef({ x: 0, y: 0 });
   const velocity = useRef(new Vector3());
 
   useEffect(() => {
@@ -62,21 +63,26 @@ export function Player() {
 
     // Handle touch camera movement with higher sensitivity
     if (touchCamera.x !== 0 || touchCamera.y !== 0) {
-      const touchSensitivity = PLAYER_CONFIG.MOUSE_SENSITIVITY * 2.5; // 2.5x more sensitive for touch
-      rotation.current.y -= touchCamera.x * touchSensitivity;
-      rotation.current.x -= touchCamera.y * touchSensitivity;
+      const touchSensitivity = PLAYER_CONFIG.MOUSE_SENSITIVITY * 5; // 5x more sensitive for touch
+      targetRotation.current.y -= touchCamera.x * touchSensitivity;
+      targetRotation.current.x -= touchCamera.y * touchSensitivity;
 
       // Clamp vertical rotation
-      rotation.current.x = Math.max(
+      targetRotation.current.x = Math.max(
         -Math.PI / 2,
-        Math.min(Math.PI / 2, rotation.current.x)
+        Math.min(Math.PI / 2, targetRotation.current.x)
       );
-
-      camera.rotation.set(rotation.current.x, rotation.current.y, 0);
 
       // Reset touch camera delta
       setTouchCamera({ x: 0, y: 0 });
     }
+
+    // Smoothly interpolate rotation toward target (for touch smoothness)
+    const smoothFactor = 0.2; // Lower = smoother but more lag
+    rotation.current.x += (targetRotation.current.x - rotation.current.x) * smoothFactor;
+    rotation.current.y += (targetRotation.current.y - rotation.current.y) * smoothFactor;
+
+    camera.rotation.set(rotation.current.x, rotation.current.y, 0);
 
     // Calculate movement direction
     // For touch controls, use normalized joystick values
@@ -131,16 +137,14 @@ export function Player() {
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (document.pointerLockElement) {
-        rotation.current.y -= e.movementX * PLAYER_CONFIG.MOUSE_SENSITIVITY;
-        rotation.current.x -= e.movementY * PLAYER_CONFIG.MOUSE_SENSITIVITY;
+        targetRotation.current.y -= e.movementX * PLAYER_CONFIG.MOUSE_SENSITIVITY;
+        targetRotation.current.x -= e.movementY * PLAYER_CONFIG.MOUSE_SENSITIVITY;
 
         // Clamp vertical rotation
-        rotation.current.x = Math.max(
+        targetRotation.current.x = Math.max(
           -Math.PI / 2,
-          Math.min(Math.PI / 2, rotation.current.x)
+          Math.min(Math.PI / 2, targetRotation.current.x)
         );
-
-        camera.rotation.set(rotation.current.x, rotation.current.y, 0);
       }
     };
 

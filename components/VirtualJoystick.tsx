@@ -75,9 +75,10 @@ export function VirtualJoystick({ onMove }: VirtualJoystickProps) {
     }
 
     // Normalize to -1 to 1 range and call onMove directly
+    // Negate Y to match expected up/down direction
     onMoveRef.current({
       x: stickX / maxDistance,
-      y: stickY / maxDistance,
+      y: -(stickY / maxDistance),
       active: true,
     });
   };

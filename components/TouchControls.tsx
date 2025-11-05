@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { VirtualJoystick } from './VirtualJoystick';
 import { useGameStore } from '@/lib/store';
 import { SERBIAN_COLORS } from '@/lib/constants';
@@ -11,6 +11,10 @@ export function TouchControls() {
   const setTouchMovement = useGameStore((state) => state.setTouchMovement);
   const setTouchSprint = useGameStore((state) => state.setTouchSprint);
   const setTouchCamera = useGameStore((state) => state.setTouchCamera);
+
+  // Track which touch IDs belong to controls
+  const controlTouchIdsRef = useRef<Set<number>>(new Set());
+  const cameraLastPosRef = useRef<{ [key: number]: { x: number; y: number } }>({});
 
   useEffect(() => {
     // Detect if device has touch capability
@@ -25,7 +29,7 @@ export function TouchControls() {
 
   return (
     <div className="fixed inset-0 pointer-events-none z-10">
-      {/* Camera control overlay - covers most of screen except controls */}
+      {/* Camera control overlay - covers most of screen */}
       <div
         className="absolute inset-0 pointer-events-auto"
         style={{
@@ -33,31 +37,58 @@ export function TouchControls() {
           zIndex: 1,
         }}
         onTouchMove={(e) => {
-          if (e.touches.length === 1) {
-            const touch = e.touches[0];
-            const movementX = touch.clientX - (e.target as any).lastX || 0;
-            const movementY = touch.clientY - (e.target as any).lastY || 0;
-
-            (e.target as any).lastX = touch.clientX;
-            (e.target as any).lastY = touch.clientY;
-
-            setTouchCamera({ x: movementX, y: movementY });
-          }
+          // Handle all touches except those on controls
+          Array.from(e.touches).forEach((touch) => {
+            if (!controlTouchIdsRef.current.has(touch.identifier)) {
+              const lastPos = cameraLastPosRef.current[touch.identifier];
+              if (lastPos) {
+                const movementX = touch.clientX - lastPos.x;
+                const movementY = touch.clientY - lastPos.y;
+                setTouchCamera({ x: movementX, y: movementY });
+              }
+              cameraLastPosRef.current[touch.identifier] = {
+                x: touch.clientX,
+                y: touch.clientY,
+              };
+            }
+          });
         }}
         onTouchStart={(e) => {
-          if (e.touches.length === 1) {
-            (e.target as any).lastX = e.touches[0].clientX;
-            (e.target as any).lastY = e.touches[0].clientY;
-          }
+          // Track new touches for camera (excluding control touches)
+          Array.from(e.touches).forEach((touch) => {
+            if (!controlTouchIdsRef.current.has(touch.identifier)) {
+              cameraLastPosRef.current[touch.identifier] = {
+                x: touch.clientX,
+                y: touch.clientY,
+              };
+            }
+          });
         }}
         onTouchEnd={(e) => {
-          delete (e.target as any).lastX;
-          delete (e.target as any).lastY;
+          // Clean up ended touches
+          Array.from(e.changedTouches).forEach((touch) => {
+            delete cameraLastPosRef.current[touch.identifier];
+          });
         }}
       />
 
       {/* Left side - Virtual Joystick */}
-      <div className="absolute bottom-8 left-8 pointer-events-auto" style={{ zIndex: 10 }}>
+      <div
+        className="absolute bottom-8 left-8 pointer-events-auto"
+        style={{ zIndex: 10 }}
+        onTouchStart={(e) => {
+          // Mark this touch as belonging to joystick
+          Array.from(e.touches).forEach((touch) => {
+            controlTouchIdsRef.current.add(touch.identifier);
+          });
+        }}
+        onTouchEnd={(e) => {
+          // Remove joystick touch IDs
+          Array.from(e.changedTouches).forEach((touch) => {
+            controlTouchIdsRef.current.delete(touch.identifier);
+          });
+        }}
+      >
         <VirtualJoystick
           onMove={(state) => {
             setTouchMovement({ x: state.x, y: state.y });
@@ -66,7 +97,22 @@ export function TouchControls() {
       </div>
 
       {/* Right side - Sprint Button */}
-      <div className="absolute bottom-8 right-8 pointer-events-auto" style={{ zIndex: 10 }}>
+      <div
+        className="absolute bottom-8 right-8 pointer-events-auto"
+        style={{ zIndex: 10 }}
+        onTouchStart={(e) => {
+          // Mark this touch as belonging to sprint button
+          Array.from(e.touches).forEach((touch) => {
+            controlTouchIdsRef.current.add(touch.identifier);
+          });
+        }}
+        onTouchEnd={(e) => {
+          // Remove sprint button touch IDs
+          Array.from(e.changedTouches).forEach((touch) => {
+            controlTouchIdsRef.current.delete(touch.identifier);
+          });
+        }}
+      >
         <button
           className="w-24 h-24 rounded-full font-bold text-white text-lg shadow-lg active:scale-95 transition-transform"
           style={{
