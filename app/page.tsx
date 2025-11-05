@@ -10,11 +10,6 @@ export default function Home() {
         <p className="text-2xl text-white/90 max-w-2xl drop-shadow-lg">
           Experience the daily life of a law-abiding Serbian citizen!
         </p>
-        <div className="flex gap-6 text-5xl my-4">
-          <span className="text-red-600">█</span>
-          <span className="text-blue-800">█</span>
-          <span className="text-white">█</span>
-        </div>
         <Link
           href="/game"
           className="px-16 py-6 text-3xl font-bold text-white rounded-lg transition-all hover:scale-110 shadow-2xl"
@@ -23,7 +18,7 @@ export default function Home() {
           PLAY NOW
         </Link>
         <div className="mt-8 text-white/70 text-lg">
-          <p>🎮 WASD to Move • SHIFT to Sprint • Mouse to Look</p>
+          <p>🎮 WASD to Move • SPACE to Sprint • Mouse to Look</p>
           <p className="mt-2">⏱️ Survive for 60 seconds to win!</p>
         </div>
       </main>

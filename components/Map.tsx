@@ -1,14 +1,30 @@
 'use client';
 
+import { useMemo } from 'react';
 import { RigidBody } from '@react-three/rapier';
+import { useTexture } from '@react-three/drei';
 import { SERBIAN_COLORS, MAP_CONFIG } from '@/lib/constants';
+import * as THREE from 'three';
 
 export function Map() {
   const wallHeight = MAP_CONFIG.WALL_HEIGHT;
   const wallThickness = MAP_CONFIG.WALL_THICKNESS;
   const mazeSize = MAP_CONFIG.SIZE;
 
-  // Simple maze layout - walls defined as [x, z, width, depth]
+  // Load apartment texture
+  const apartmentTexture = useTexture('/apartmani.jpg');
+
+  // Configure texture wrapping - simple tiling
+  useMemo(() => {
+    if (apartmentTexture) {
+      apartmentTexture.wrapS = THREE.RepeatWrapping;
+      apartmentTexture.wrapT = THREE.RepeatWrapping;
+      apartmentTexture.needsUpdate = true;
+    }
+    return apartmentTexture;
+  }, [apartmentTexture]);
+
+  // Larger, more complex maze layout - walls defined as [x, z, width, depth]
   const walls = [
     // Outer boundary
     [0, -mazeSize / 2, mazeSize, wallThickness], // North wall
@@ -16,15 +32,34 @@ export function Map() {
     [-mazeSize / 2, 0, wallThickness, mazeSize], // West wall
     [mazeSize / 2, 0, wallThickness, mazeSize],  // East wall
 
-    // Inner maze walls (creating paths)
-    [15, 0, wallThickness, 20],
-    [-15, 0, wallThickness, 20],
-    [0, 15, 20, wallThickness],
-    [0, -15, 20, wallThickness],
-    [10, 10, 15, wallThickness],
-    [-10, -10, 15, wallThickness],
-    [10, -10, wallThickness, 15],
-    [-10, 10, wallThickness, 15],
+    // Complex inner maze - more open spaces with strategic corridors
+    // Vertical walls
+    [20, -10, wallThickness, 15],
+    [20, 15, wallThickness, 20],
+    [-20, 10, wallThickness, 15],
+    [-20, -15, wallThickness, 20],
+    [10, -20, wallThickness, 12],
+    [-10, 20, wallThickness, 12],
+
+    // Horizontal walls
+    [15, 10, 12, wallThickness],
+    [-15, -10, 12, wallThickness],
+    [0, 20, 15, wallThickness],
+    [0, -20, 15, wallThickness],
+    [-8, 0, 10, wallThickness],
+    [8, 5, 10, wallThickness],
+
+    // Corner sections
+    [18, 18, 8, wallThickness],
+    [-18, -18, 8, wallThickness],
+    [18, -18, wallThickness, 8],
+    [-18, 18, wallThickness, 8],
+
+    // Additional complexity
+    [5, -10, wallThickness, 8],
+    [-5, 10, wallThickness, 8],
+    [12, -5, 8, wallThickness],
+    [-12, 5, 8, wallThickness],
   ];
 
   return (
@@ -47,21 +82,44 @@ export function Map() {
         <meshStandardMaterial color={SERBIAN_COLORS.BLUE} />
       </mesh>
 
-      {/* Maze Walls */}
-      {walls.map((wall, index) => (
-        <RigidBody key={index} type="fixed" colliders="cuboid">
-          <mesh
-            castShadow
-            receiveShadow
-            position={[wall[0], wallHeight / 2, wall[1]]}
-          >
-            <boxGeometry args={[wall[2], wallHeight, wall[3]]} />
-            <meshStandardMaterial
-              color={index % 2 === 0 ? SERBIAN_COLORS.RED : SERBIAN_COLORS.BLUE}
-            />
-          </mesh>
-        </RigidBody>
-      ))}
+      {/* Maze Walls with apartment texture */}
+      {walls.map((wall, index) => {
+        const wallWidth = wall[2];  // X dimension
+        const wallDepth = wall[3];  // Z dimension
+
+        // Determine the main visible face size
+        // For walls, we care about the longest horizontal dimension
+        const horizontalSize = Math.max(wallWidth, wallDepth);
+
+        // Calculate repeat to maintain consistent texture size
+        // textureSize controls how big one tile appears (smaller = more tiles)
+        const textureSize = 4;
+        const repeatU = horizontalSize / textureSize;
+        const repeatV = wallHeight / textureSize;
+
+        // Clone texture for each wall
+        const wallTexture = apartmentTexture.clone();
+        wallTexture.repeat.set(repeatU, repeatV);
+        wallTexture.needsUpdate = true;
+
+        return (
+          <RigidBody key={index} type="fixed" colliders="cuboid">
+            <mesh
+              castShadow
+              receiveShadow
+              position={[wall[0], wallHeight / 2, wall[1]]}
+            >
+              <boxGeometry args={[wallWidth, wallHeight, wallDepth]} />
+              <meshStandardMaterial
+                map={wallTexture}
+                color="#ffffff"
+                metalness={0}
+                roughness={0.8}
+              />
+            </mesh>
+          </RigidBody>
+        );
+      })}
     </>
   );
 }

@@ -15,7 +15,7 @@ export function NextbotManager() {
   const spawnPositions: [number, number, number][] = [];
   for (let i = 0; i < NEXTBOT_CONFIG.SPAWN_COUNT; i++) {
     const angle = (i / NEXTBOT_CONFIG.SPAWN_COUNT) * Math.PI * 2;
-    const radius = 20;
+    const radius = 25; // Increased from 20 to match larger map
     const x = Math.cos(angle) * radius;
     const z = Math.sin(angle) * radius;
     spawnPositions.push([x, 2, z]);

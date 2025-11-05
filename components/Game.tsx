@@ -1,5 +1,6 @@
 'use client';
 
+import { Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { Physics } from '@react-three/rapier';
 import { KeyboardControls } from '@react-three/drei';
@@ -15,7 +16,7 @@ const keyboardMap = [
   { name: 'backward', keys: ['ArrowDown', 'KeyS'] },
   { name: 'left', keys: ['ArrowLeft', 'KeyA'] },
   { name: 'right', keys: ['ArrowRight', 'KeyD'] },
-  { name: 'sprint', keys: ['ShiftLeft', 'ShiftRight'] },
+  { name: 'sprint', keys: ['Space'] },
 ];
 
 export function Game() {
@@ -28,27 +29,31 @@ export function Game() {
         camera={{ position: [0, 2, 5], fov: 75 }}
         style={{ width: '100vw', height: '100vh' }}
       >
-        {/* Lighting */}
-        <ambientLight intensity={0.5} />
+        {/* Lighting - increased for better texture visibility */}
+        <ambientLight intensity={0.7} />
         <directionalLight
           position={[10, 20, 10]}
-          intensity={0.8}
+          intensity={1.2}
           castShadow
           shadow-mapSize-width={2048}
           shadow-mapSize-height={2048}
         />
-        <fog attach="fog" args={['#0C4076', 10, 50]} />
+        <fog attach="fog" args={['#0C4076', 10, 60]} />
 
         {/* Physics World */}
         <Physics gravity={[0, -9.81, 0]}>
           <KeyboardControls map={keyboardMap}>
             {/* Game Objects */}
-            <Map />
+            <Suspense fallback={null}>
+              <Map />
+            </Suspense>
             {gameState === 'playing' && (
-              <>
-                <Player />
-                <NextbotManager />
-              </>
+              <Suspense fallback={null}>
+                <>
+                  <Player />
+                  <NextbotManager />
+                </>
+              </Suspense>
             )}
           </KeyboardControls>
         </Physics>

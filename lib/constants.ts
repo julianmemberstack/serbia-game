@@ -32,10 +32,10 @@ export const NEXTBOT_CONFIG = {
 
 // Map Configuration
 export const MAP_CONFIG = {
-  SIZE: 50,
+  SIZE: 60, // Increased from 50 for larger, more open map
   WALL_HEIGHT: 4,
   WALL_THICKNESS: 1,
-  GROUND_SIZE: 60,
+  GROUND_SIZE: 70, // Increased from 60 to match larger map
 } as const;
 
 // Game Configuration
@@ -43,6 +43,24 @@ export const GAME_CONFIG = {
   ROUND_DURATION: 60, // seconds to survive
   GRAVITY: -9.81,
 } as const;
+
+// Death Messages
+export const DEATH_MESSAGES = [
+  "YOU'VE BEEN CHARGED WITH A CRIME YOU DIDN'T COMMIT!",
+  "PAY $500 BRIBE!",
+  "YOU'RE MISSING A PAPER!",
+  "YOUR PERMIT HAS EXPIRED!",
+  "VIOLATION OF ARTICLE 247!",
+  "BUILDING WITHOUT A PERMIT!",
+  "ILLEGAL CONSTRUCTION DETECTED!",
+  "YOU NEED 5 MORE SIGNATURES!",
+  "COME BACK WITH THE PROPER FORMS!",
+  "THIS DOCUMENT IS FROM THE WRONG OFFICE!",
+  "YOU'RE 3 DAYS LATE ON YOUR REGISTRATION!",
+  "PARKING VIOLATION - 10,000 DINAR FINE!",
+  "YOUR DOCUMENTATION IS INCOMPLETE!",
+  "BUREAUCRACY WINS AGAIN!",
+] as const;
 
 // Game States
 export type GameState = 'menu' | 'playing' | 'dead' | 'won';
