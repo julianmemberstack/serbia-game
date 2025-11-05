@@ -2,14 +2,14 @@
 
 import { useRef, useEffect } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
-import { RigidBody, RigidBodyApi } from '@react-three/rapier';
+import { RigidBody, RapierRigidBody } from '@react-three/rapier';
 import { PointerLockControls, useKeyboardControls } from '@react-three/drei';
 import { Vector3 } from 'three';
 import { useGameStore } from '@/lib/store';
 import { PLAYER_CONFIG } from '@/lib/constants';
 
 export function Player() {
-  const playerRef = useRef<RigidBodyApi>(null);
+  const playerRef = useRef<RapierRigidBody>(null);
   const { camera } = useThree();
   const [, getKeys] = useKeyboardControls();
 

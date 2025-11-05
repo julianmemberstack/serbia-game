@@ -2,7 +2,7 @@
 
 import { useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
-import { RigidBody, RigidBodyApi } from '@react-three/rapier';
+import { RigidBody, RapierRigidBody } from '@react-three/rapier';
 import { Billboard, Plane, useTexture } from '@react-three/drei';
 import { Vector3 } from 'three';
 import { NEXTBOT_CONFIG, NextbotType, NEXTBOT_TEXTURES } from '@/lib/constants';
@@ -15,7 +15,7 @@ interface NextbotProps {
 }
 
 export function Nextbot({ position, onKill, type }: NextbotProps) {
-  const botRef = useRef<RigidBodyApi>(null);
+  const botRef = useRef<RapierRigidBody>(null);
   const { camera } = useThree();
   const gameState = useGameStore((state) => state.gameState);
   const playerPosition = useGameStore((state) => state.playerPosition);
@@ -25,7 +25,9 @@ export function Nextbot({ position, onKill, type }: NextbotProps) {
   const texture = useTexture(NEXTBOT_TEXTURES[type]);
 
   // Calculate aspect ratio from texture to prevent warping
-  const aspectRatio = texture.image ? texture.image.width / texture.image.height : 1;
+  const aspectRatio = (texture.image as any)?.width && (texture.image as any)?.height
+    ? (texture.image as any).width / (texture.image as any).height
+    : 1;
   const billboardWidth = NEXTBOT_CONFIG.SIZE * aspectRatio;
   const billboardHeight = NEXTBOT_CONFIG.SIZE;
 
