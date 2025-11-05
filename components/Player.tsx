@@ -17,6 +17,12 @@ export function Player() {
   const setStamina = useGameStore((state) => state.setStamina);
   const setPlayerPosition = useGameStore((state) => state.setPlayerPosition);
 
+  // Touch controls
+  const touchMovement = useGameStore((state) => state.touchMovement);
+  const touchSprint = useGameStore((state) => state.touchSprint);
+  const touchCamera = useGameStore((state) => state.touchCamera);
+  const setTouchCamera = useGameStore((state) => state.setTouchCamera);
+
   const direction = useRef(new Vector3());
   const frontVector = useRef(new Vector3());
   const sideVector = useRef(new Vector3());
@@ -32,7 +38,14 @@ export function Player() {
   useFrame((state, delta) => {
     if (!playerRef.current) return;
 
-    const { forward, backward, left, right, sprint } = getKeys();
+    const keys = getKeys();
+
+    // Combine keyboard and touch inputs
+    const forward = keys.forward || touchMovement.y < -0.3;
+    const backward = keys.backward || touchMovement.y > 0.3;
+    const left = keys.left || touchMovement.x < -0.3;
+    const right = keys.right || touchMovement.x > 0.3;
+    const sprint = keys.sprint || touchSprint;
 
     // Get player position
     const position = playerRef.current.translation();
@@ -47,9 +60,42 @@ export function Player() {
       position.z
     );
 
+    // Handle touch camera movement
+    if (touchCamera.x !== 0 || touchCamera.y !== 0) {
+      rotation.current.y -= touchCamera.x * PLAYER_CONFIG.MOUSE_SENSITIVITY;
+      rotation.current.x -= touchCamera.y * PLAYER_CONFIG.MOUSE_SENSITIVITY;
+
+      // Clamp vertical rotation
+      rotation.current.x = Math.max(
+        -Math.PI / 2,
+        Math.min(Math.PI / 2, rotation.current.x)
+      );
+
+      camera.rotation.set(rotation.current.x, rotation.current.y, 0);
+
+      // Reset touch camera delta
+      setTouchCamera({ x: 0, y: 0 });
+    }
+
     // Calculate movement direction
-    frontVector.current.set(0, 0, Number(backward) - Number(forward));
-    sideVector.current.set(Number(left) - Number(right), 0, 0);
+    // For touch controls, use normalized joystick values
+    const touchForward = -touchMovement.y;
+    const touchSide = -touchMovement.x;
+
+    frontVector.current.set(
+      0,
+      0,
+      touchMovement.x !== 0 || touchMovement.y !== 0
+        ? touchForward
+        : Number(backward) - Number(forward)
+    );
+    sideVector.current.set(
+      touchMovement.x !== 0 || touchMovement.y !== 0
+        ? touchSide
+        : Number(left) - Number(right),
+      0,
+      0
+    );
 
     direction.current
       .subVectors(frontVector.current, sideVector.current)
@@ -61,8 +107,12 @@ export function Player() {
       )
       .applyEuler(camera.rotation);
 
+    // Check if player is moving
+    const isMoving = forward || backward || left || right ||
+                     Math.abs(touchMovement.x) > 0.1 || Math.abs(touchMovement.y) > 0.1;
+
     // Handle stamina
-    if (sprint && (forward || backward || left || right) && stamina > 0) {
+    if (sprint && isMoving && stamina > 0) {
       setStamina(Math.max(0, stamina - PLAYER_CONFIG.STAMINA_DRAIN_RATE * delta));
     } else if (stamina < PLAYER_CONFIG.STAMINA_MAX) {
       setStamina(Math.min(PLAYER_CONFIG.STAMINA_MAX, stamina + PLAYER_CONFIG.STAMINA_REGEN_RATE * delta));

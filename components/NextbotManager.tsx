@@ -3,13 +3,16 @@
 import { useFrame } from '@react-three/fiber';
 import { Nextbot } from './Nextbot';
 import { useGameStore } from '@/lib/store';
-import { NEXTBOT_CONFIG } from '@/lib/constants';
+import { NEXTBOT_CONFIG, NextbotType } from '@/lib/constants';
 
 export function NextbotManager() {
   const endGame = useGameStore((state) => state.endGame);
   const timeRemaining = useGameStore((state) => state.timeRemaining);
   const setTimeRemaining = useGameStore((state) => state.setTimeRemaining);
   const gameState = useGameStore((state) => state.gameState);
+
+  // Define the nextbot types to spawn (mix of all three)
+  const nextbotTypes: NextbotType[] = ['police', 'optuznica', 'speed-camera', 'police', 'speed-camera'];
 
   // Generate spawn positions for nextbots (around the perimeter)
   const spawnPositions: [number, number, number][] = [];
@@ -35,19 +38,19 @@ export function NextbotManager() {
     }
   });
 
-  const handleKill = () => {
-    endGame(false); // Player died
+  const handleKill = (type: NextbotType) => {
+    endGame(false, type); // Player died - pass the nextbot type
   };
 
   return (
     <>
-      {/* Spawn nextbots */}
+      {/* Spawn nextbots with different types */}
       {spawnPositions.map((pos, i) => (
         <Nextbot
           key={i}
           position={pos}
           onKill={handleKill}
-          texturePath={i === 0 ? '/optuznica.webp' : '/policijska-vozila.png'}
+          type={nextbotTypes[i]}
         />
       ))}
     </>

@@ -44,23 +44,35 @@ export const GAME_CONFIG = {
   GRAVITY: -9.81,
 } as const;
 
-// Death Messages
-export const DEATH_MESSAGES = [
-  "YOU'VE BEEN CHARGED WITH A CRIME YOU DIDN'T COMMIT!",
-  "PAY $500 BRIBE!",
-  "YOU'RE MISSING A PAPER!",
-  "YOUR PERMIT HAS EXPIRED!",
-  "VIOLATION OF ARTICLE 247!",
-  "BUILDING WITHOUT A PERMIT!",
-  "ILLEGAL CONSTRUCTION DETECTED!",
-  "YOU NEED 5 MORE SIGNATURES!",
-  "COME BACK WITH THE PROPER FORMS!",
-  "THIS DOCUMENT IS FROM THE WRONG OFFICE!",
-  "YOU'RE 3 DAYS LATE ON YOUR REGISTRATION!",
-  "PARKING VIOLATION - 10,000 DINAR FINE!",
-  "YOUR DOCUMENTATION IS INCOMPLETE!",
-  "BUREAUCRACY WINS AGAIN!",
-] as const;
+// Nextbot Types
+export type NextbotType = 'police' | 'optuznica' | 'speed-camera';
+
+export const NEXTBOT_TEXTURES: Record<NextbotType, string> = {
+  police: '/policijska-vozila.png',
+  optuznica: '/optuznica.webp',
+  'speed-camera': '/speed-camera.png',
+} as const;
+
+// Death Messages by Nextbot Type
+export const DEATH_MESSAGES: Record<NextbotType, string[]> = {
+  optuznica: [
+    "YOU'VE BEEN CHARGED WITH A CRIME YOU DIDN'T COMMIT!",
+    "YOU FORGOT TO OPEN A LETTER!",
+    "YOU BROKE A LAW THAT DOESN'T EXIST!",
+  ],
+  police: [
+    "PAY $500 BRIBE!",
+    "YOU GOT BEAT AT A PROTEST!",
+    "YOU DIED OF BOREDOM AT MUP!",
+  ],
+  'speed-camera': [
+    "YOU DROVE 1KM OVER THE LIMIT!",
+    "FINE: 5,000 RSD!",
+    "FINE: 10,000 RSD!",
+    "FINE: 15,000 RSD!",
+    "FINE: 25,000 RSD!",
+  ],
+} as const;
 
 // Game States
 export type GameState = 'menu' | 'playing' | 'dead' | 'won';

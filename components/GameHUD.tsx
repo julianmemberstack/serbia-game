@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useGameStore } from '@/lib/store';
-import { SERBIAN_COLORS, PLAYER_CONFIG } from '@/lib/constants';
+import { SERBIAN_COLORS, PLAYER_CONFIG, GAME_CONFIG } from '@/lib/constants';
 
 export function GameHUD() {
   const gameState = useGameStore((state) => state.gameState);
@@ -15,6 +15,11 @@ export function GameHUD() {
   const staminaPercent = (stamina / PLAYER_CONFIG.STAMINA_MAX) * 100;
   const minutes = Math.floor(timeRemaining / 60);
   const seconds = Math.floor(timeRemaining % 60);
+
+  // Calculate time survived (for death screen)
+  const timeSurvived = GAME_CONFIG.ROUND_DURATION - timeRemaining;
+  const survivedMinutes = Math.floor(timeSurvived / 60);
+  const survivedSeconds = Math.floor(timeSurvived % 60);
 
   // Handle Enter key to start/restart
   useEffect(() => {
@@ -43,9 +48,9 @@ export function GameHUD() {
               LAW ABIDING SERBIAN CITIZEN SIMULATOR
             </h1>
             <div className="text-xl text-white space-y-2 mb-8">
-              <p>WASD - Move</p>
-              <p>SPACE - Sprint</p>
-              <p>MOUSE - Look Around</p>
+              <p>WASD / Virtual Joystick - Move</p>
+              <p>SPACE / Button - Sprint</p>
+              <p>MOUSE / Touch Drag - Look Around</p>
               <p className="mt-4">Survive for 60 seconds!</p>
             </div>
             <button
@@ -72,6 +77,19 @@ export function GameHUD() {
                 {minutes}:{seconds.toString().padStart(2, '0')}
               </div>
               <div className="text-xl text-white/80 mt-2">Time Remaining</div>
+            </div>
+          </div>
+
+          {/* Temperature Display */}
+          <div className="absolute top-8 right-8 pointer-events-none">
+            <div className="text-center bg-black/30 px-3 py-2 rounded-lg border"
+              style={{ borderColor: SERBIAN_COLORS.RED }}>
+              <div className="text-2xl font-bold text-white" style={{
+                textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
+              }}>
+                42°C
+              </div>
+              <div className="text-xs text-white/80">Belgrade</div>
             </div>
           </div>
 
@@ -117,7 +135,7 @@ export function GameHUD() {
               {deathMessage}
             </p>
             <div className="text-xl text-white/70">
-              Survived: {minutes}:{seconds.toString().padStart(2, '0')}
+              Survived: {survivedMinutes}:{survivedSeconds.toString().padStart(2, '0')}
             </div>
             <button
               onClick={resetGame}

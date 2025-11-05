@@ -5,24 +5,24 @@ import { useFrame, useThree } from '@react-three/fiber';
 import { RigidBody, RigidBodyApi } from '@react-three/rapier';
 import { Billboard, Plane, useTexture } from '@react-three/drei';
 import { Vector3 } from 'three';
-import { NEXTBOT_CONFIG } from '@/lib/constants';
+import { NEXTBOT_CONFIG, NextbotType, NEXTBOT_TEXTURES } from '@/lib/constants';
 import { useGameStore } from '@/lib/store';
 
 interface NextbotProps {
   position: [number, number, number];
-  onKill: () => void;
-  texturePath?: string; // Optional texture path
+  onKill: (type: NextbotType) => void;
+  type: NextbotType;
 }
 
-export function Nextbot({ position, onKill, texturePath = '/policijska-vozila.png' }: NextbotProps) {
+export function Nextbot({ position, onKill, type }: NextbotProps) {
   const botRef = useRef<RigidBodyApi>(null);
   const { camera } = useThree();
   const gameState = useGameStore((state) => state.gameState);
   const playerPosition = useGameStore((state) => state.playerPosition);
   const startTime = useRef(Date.now());
 
-  // Load the texture (default to police vehicles)
-  const texture = useTexture(texturePath);
+  // Load the texture based on nextbot type
+  const texture = useTexture(NEXTBOT_TEXTURES[type]);
 
   // Calculate aspect ratio from texture to prevent warping
   const aspectRatio = texture.image ? texture.image.width / texture.image.height : 1;
@@ -66,7 +66,7 @@ export function Nextbot({ position, onKill, texturePath = '/policijska-vozila.pn
 
     if (distance < NEXTBOT_CONFIG.KILL_DISTANCE && !hasKilled.current) {
       hasKilled.current = true;
-      onKill();
+      onKill(type);
     }
   });
 

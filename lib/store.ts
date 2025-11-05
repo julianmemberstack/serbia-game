@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { GameState, PLAYER_CONFIG, GAME_CONFIG, DEATH_MESSAGES } from './constants';
+import { GameState, PLAYER_CONFIG, GAME_CONFIG, DEATH_MESSAGES, NextbotType } from './constants';
 import { Vector3 } from 'three';
 
 interface GameStore {
@@ -21,9 +21,17 @@ interface GameStore {
   deathMessage: string;
   setDeathMessage: (message: string) => void;
 
+  // Touch controls
+  touchMovement: { x: number; y: number };
+  setTouchMovement: (movement: { x: number; y: number }) => void;
+  touchSprint: boolean;
+  setTouchSprint: (sprint: boolean) => void;
+  touchCamera: { x: number; y: number };
+  setTouchCamera: (camera: { x: number; y: number }) => void;
+
   // Actions
   startGame: () => void;
-  endGame: (won: boolean) => void;
+  endGame: (won: boolean, killerType?: NextbotType) => void;
   resetGame: () => void;
 }
 
@@ -34,6 +42,9 @@ export const useGameStore = create<GameStore>((set) => ({
   playerPosition: new Vector3(0, 0, 0),
   timeRemaining: GAME_CONFIG.ROUND_DURATION,
   deathMessage: '',
+  touchMovement: { x: 0, y: 0 },
+  touchSprint: false,
+  touchCamera: { x: 0, y: 0 },
 
   // Setters
   setGameState: (gameState) => set({ gameState }),
@@ -41,6 +52,9 @@ export const useGameStore = create<GameStore>((set) => ({
   setPlayerPosition: (playerPosition) => set({ playerPosition }),
   setTimeRemaining: (timeRemaining) => set({ timeRemaining }),
   setDeathMessage: (deathMessage) => set({ deathMessage }),
+  setTouchMovement: (touchMovement) => set({ touchMovement }),
+  setTouchSprint: (touchSprint) => set({ touchSprint }),
+  setTouchCamera: (touchCamera) => set({ touchCamera }),
 
   // Actions
   startGame: () => set({
@@ -49,11 +63,13 @@ export const useGameStore = create<GameStore>((set) => ({
     timeRemaining: GAME_CONFIG.ROUND_DURATION,
   }),
 
-  endGame: (won) => {
-    // Select random death message if player lost
-    const randomMessage = won
-      ? ''
-      : DEATH_MESSAGES[Math.floor(Math.random() * DEATH_MESSAGES.length)];
+  endGame: (won, killerType) => {
+    // Select random death message based on killer type if player lost
+    let randomMessage = '';
+    if (!won && killerType) {
+      const messages = DEATH_MESSAGES[killerType];
+      randomMessage = messages[Math.floor(Math.random() * messages.length)];
+    }
 
     set({
       gameState: won ? 'won' : 'dead',

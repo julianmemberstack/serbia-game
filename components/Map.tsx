@@ -11,8 +11,9 @@ export function Map() {
   const wallThickness = MAP_CONFIG.WALL_THICKNESS;
   const mazeSize = MAP_CONFIG.SIZE;
 
-  // Load apartment texture
+  // Load textures
   const apartmentTexture = useTexture('/apartmani.jpg');
+  const concreteTexture = useTexture('/concrete.jpg');
 
   // Configure texture wrapping - simple tiling
   useMemo(() => {
@@ -21,8 +22,17 @@ export function Map() {
       apartmentTexture.wrapT = THREE.RepeatWrapping;
       apartmentTexture.needsUpdate = true;
     }
+    if (concreteTexture) {
+      concreteTexture.wrapS = THREE.RepeatWrapping;
+      concreteTexture.wrapT = THREE.RepeatWrapping;
+      // Tile the concrete texture across the ground
+      const tileSize = 5; // Size of one concrete tile
+      const repeat = MAP_CONFIG.GROUND_SIZE / tileSize;
+      concreteTexture.repeat.set(repeat, repeat);
+      concreteTexture.needsUpdate = true;
+    }
     return apartmentTexture;
-  }, [apartmentTexture]);
+  }, [apartmentTexture, concreteTexture]);
 
   // Larger, more complex maze layout - walls defined as [x, z, width, depth]
   const walls = [
@@ -64,43 +74,85 @@ export function Map() {
 
   return (
     <>
-      {/* Ground with Serbian flag pattern */}
+      {/* Ground with concrete texture */}
       <RigidBody type="fixed" colliders="cuboid">
         <mesh receiveShadow position={[0, -0.5, 0]}>
           <boxGeometry args={[MAP_CONFIG.GROUND_SIZE, 1, MAP_CONFIG.GROUND_SIZE]} />
-          <meshStandardMaterial color={SERBIAN_COLORS.WHITE} />
+          <meshStandardMaterial
+            map={concreteTexture}
+            metalness={0}
+            roughness={0.9}
+          />
         </mesh>
       </RigidBody>
-
-      {/* Ground stripes (Serbian flag pattern) */}
-      <mesh receiveShadow position={[0, -0.49, -MAP_CONFIG.GROUND_SIZE / 4]}>
-        <boxGeometry args={[MAP_CONFIG.GROUND_SIZE, 0.01, MAP_CONFIG.GROUND_SIZE / 3]} />
-        <meshStandardMaterial color={SERBIAN_COLORS.RED} />
-      </mesh>
-      <mesh receiveShadow position={[0, -0.49, MAP_CONFIG.GROUND_SIZE / 4]}>
-        <boxGeometry args={[MAP_CONFIG.GROUND_SIZE, 0.01, MAP_CONFIG.GROUND_SIZE / 3]} />
-        <meshStandardMaterial color={SERBIAN_COLORS.BLUE} />
-      </mesh>
 
       {/* Maze Walls with apartment texture */}
       {walls.map((wall, index) => {
         const wallWidth = wall[2];  // X dimension
         const wallDepth = wall[3];  // Z dimension
 
-        // Determine the main visible face size
-        // For walls, we care about the longest horizontal dimension
-        const horizontalSize = Math.max(wallWidth, wallDepth);
-
         // Calculate repeat to maintain consistent texture size
         // textureSize controls how big one tile appears (smaller = more tiles)
         const textureSize = 4;
-        const repeatU = horizontalSize / textureSize;
-        const repeatV = wallHeight / textureSize;
 
-        // Clone texture for each wall
-        const wallTexture = apartmentTexture.clone();
-        wallTexture.repeat.set(repeatU, repeatV);
-        wallTexture.needsUpdate = true;
+        // Create materials for each face of the box to prevent stretching
+        // Order: [right, left, top, bottom, front, back]
+        const materials = [
+          // Right face (X+) - depth x height
+          (() => {
+            const tex = apartmentTexture.clone();
+            tex.wrapS = THREE.RepeatWrapping;
+            tex.wrapT = THREE.RepeatWrapping;
+            tex.repeat.set(wallDepth / textureSize, wallHeight / textureSize);
+            tex.needsUpdate = true;
+            return new THREE.MeshStandardMaterial({ map: tex, metalness: 0, roughness: 0.8 });
+          })(),
+          // Left face (X-) - depth x height
+          (() => {
+            const tex = apartmentTexture.clone();
+            tex.wrapS = THREE.RepeatWrapping;
+            tex.wrapT = THREE.RepeatWrapping;
+            tex.repeat.set(wallDepth / textureSize, wallHeight / textureSize);
+            tex.needsUpdate = true;
+            return new THREE.MeshStandardMaterial({ map: tex, metalness: 0, roughness: 0.8 });
+          })(),
+          // Top face (Y+) - width x depth
+          (() => {
+            const tex = apartmentTexture.clone();
+            tex.wrapS = THREE.RepeatWrapping;
+            tex.wrapT = THREE.RepeatWrapping;
+            tex.repeat.set(wallWidth / textureSize, wallDepth / textureSize);
+            tex.needsUpdate = true;
+            return new THREE.MeshStandardMaterial({ map: tex, metalness: 0, roughness: 0.8 });
+          })(),
+          // Bottom face (Y-) - width x depth
+          (() => {
+            const tex = apartmentTexture.clone();
+            tex.wrapS = THREE.RepeatWrapping;
+            tex.wrapT = THREE.RepeatWrapping;
+            tex.repeat.set(wallWidth / textureSize, wallDepth / textureSize);
+            tex.needsUpdate = true;
+            return new THREE.MeshStandardMaterial({ map: tex, metalness: 0, roughness: 0.8 });
+          })(),
+          // Front face (Z+) - width x height
+          (() => {
+            const tex = apartmentTexture.clone();
+            tex.wrapS = THREE.RepeatWrapping;
+            tex.wrapT = THREE.RepeatWrapping;
+            tex.repeat.set(wallWidth / textureSize, wallHeight / textureSize);
+            tex.needsUpdate = true;
+            return new THREE.MeshStandardMaterial({ map: tex, metalness: 0, roughness: 0.8 });
+          })(),
+          // Back face (Z-) - width x height
+          (() => {
+            const tex = apartmentTexture.clone();
+            tex.wrapS = THREE.RepeatWrapping;
+            tex.wrapT = THREE.RepeatWrapping;
+            tex.repeat.set(wallWidth / textureSize, wallHeight / textureSize);
+            tex.needsUpdate = true;
+            return new THREE.MeshStandardMaterial({ map: tex, metalness: 0, roughness: 0.8 });
+          })(),
+        ];
 
         return (
           <RigidBody key={index} type="fixed" colliders="cuboid">
@@ -108,14 +160,9 @@ export function Map() {
               castShadow
               receiveShadow
               position={[wall[0], wallHeight / 2, wall[1]]}
+              material={materials}
             >
               <boxGeometry args={[wallWidth, wallHeight, wallDepth]} />
-              <meshStandardMaterial
-                map={wallTexture}
-                color="#ffffff"
-                metalness={0}
-                roughness={0.8}
-              />
             </mesh>
           </RigidBody>
         );
