@@ -129,7 +129,7 @@ export function GameHUD() {
         <div className="absolute inset-0 flex items-center justify-center pointer-events-auto"
           style={{ backgroundColor: 'rgba(198, 54, 60, 0.95)' }}>
           <div className="text-center space-y-8 px-8">
-            <h1 className="text-8xl font-bold text-white mb-4">
+            <h1 className="text-6xl font-bold text-white mb-4">
               {killerType ? DEATH_TITLES[killerType] : 'YOU DIED'}
             </h1>
             <p className="text-4xl text-white/90 font-bold max-w-4xl mx-auto">

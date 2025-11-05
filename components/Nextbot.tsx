@@ -77,8 +77,14 @@ export function Nextbot({ position, onKill, type }: NextbotProps) {
       colliders="ball"
       position={position}
       enabledRotations={[false, false, false]}
-      linearDamping={0.5}
-      mass={0.1}
+      linearDamping={0}
+      angularDamping={0}
+      mass={1}
+      friction={0}
+      restitution={0}
+      collisionGroups={0x00020002}
+      solverGroups={0x00020001}
+      gravityScale={0}
     >
       <Billboard position={[0, NEXTBOT_CONFIG.HEIGHT_OFFSET, 0]}>
         <Plane args={[billboardWidth, billboardHeight]}>
