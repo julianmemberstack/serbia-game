@@ -95,7 +95,7 @@ export function GameHUD() {
           </div>
 
           {/* Stamina Bar - repositioned higher for mobile */}
-          <div className="absolute top-24 left-1/2 transform -translate-x-1/2 pointer-events-none w-full px-4 md:px-0 md:w-auto">
+          <div className="absolute top-24 md:top-36 left-1/2 transform -translate-x-1/2 pointer-events-none w-full px-4 md:px-0 md:w-auto">
             <div className="w-full md:w-96 max-w-sm mx-auto">
               <div className="text-white text-xs md:text-sm mb-1 text-center">
                 STAMINA {stamina < 10 && '- EXHAUSTED!'}
@@ -115,7 +115,7 @@ export function GameHUD() {
 
           {/* Sprint Indicator */}
           {stamina < PLAYER_CONFIG.STAMINA_MAX && stamina > 0 && (
-            <div className="absolute top-40 left-1/2 transform -translate-x-1/2 pointer-events-none">
+            <div className="absolute top-40 md:top-52 left-1/2 transform -translate-x-1/2 pointer-events-none">
               <div className="text-white/60 text-xs md:text-sm">
                 {stamina < 20 ? '⚠️ Low Stamina' : 'Sprinting...'}
               </div>
